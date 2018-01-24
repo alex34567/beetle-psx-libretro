@@ -55,6 +55,7 @@ int64 cd_slow_timeout = 8000; // microseconds
 static int psx_skipbios;
 
 bool psx_cpu_overclock;
+bool psx_cpu_disable_cache;
 static bool is_pal;
 enum dither_mode psx_gpu_dither_mode;
 
@@ -2648,6 +2649,19 @@ static void check_variables(bool startup)
             rsx_intf_set_fallback_type(RSX_OPENGL);
          }
       }
+
+      var.key = option_cpu_disable_cache;
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+          if (strcmp(var.value, "enabled") == 0)
+              psx_cpu_disable_cache = true;
+          else if (strcmp(var.value, "disabled") == 0)
+              psx_cpu_disable_cache = false;
+      }
+      else
+          psx_cpu_disable_cache = false;
+
    }
 
 #ifndef EMSCRIPTEN
@@ -3776,6 +3790,7 @@ void retro_set_environment(retro_environment_t cb)
       { option_widescreen_hack, "Widescreen mode hack; disabled|enabled" },
       { option_frame_duping, "Frame duping (speedup); disabled|enabled" },
       { option_cpu_overclock, "CPU Overclock; disabled|enabled" },
+      { option_cpu_disable_cache, "JIT DEBUG Disable CPU Cache (restart); disabled|enabled" },
       { option_skip_bios, "Skip BIOS; disabled|enabled" },
       { option_dither_mode, "Dithering pattern; 1x(native)|internal resolution|disabled" },
       { option_display_internal_fps, "Display internal FPS; disabled|enabled" },

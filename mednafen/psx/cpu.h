@@ -149,6 +149,7 @@ class PS_CPU
       uint8_t *FastMap[1 << (32 - FAST_MAP_SHIFT)];
       uint8_t DummyPage[FAST_MAP_PSIZE];
 
+      bool CacheForceDisabled;
 
       uint32_t Exception(uint32_t code, uint32_t PC, const uint32_t NP, const uint32_t NPM, const uint32_t instr) MDFN_WARN_UNUSED_RESULT;
 

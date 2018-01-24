@@ -27,6 +27,7 @@
 // int pgxpMode = PGXP_GetModes();
 
 extern bool psx_cpu_overclock;
+extern bool psx_cpu_disable_cache;
 
 #define BIU_ENABLE_ICACHE_S1	0x00000800	// Enable I-cache, set 1
 #define BIU_ICACHE_FSIZE_MASK	0x00000300  // I-cache fill size mask; 0x000 = 2 words, 0x100 = 4 words, 0x200 = 8 words, 0x300 = 16 words
@@ -146,11 +147,14 @@ void PS_CPU::Power(void)
       ICache[i].Data = 0;
    }
 
+   CacheForceDisabled = psx_cpu_disable_cache;
+
    GTE_Power();
 }
 
 int PS_CPU::StateAction(StateMem *sm, int load, int data_only)
 {
+
    SFORMAT StateRegs[] =
    {
       SFARRAY32(GPR, 32),
@@ -189,9 +193,16 @@ int PS_CPU::StateAction(StateMem *sm, int load, int data_only)
 
    ret &= GTE_StateAction(sm, load, data_only);
 
+   //Invalidate loaded cache if not emulating cache
    if(load)
    {
-
+       if(CacheForceDisabled)
+       {
+           for (int x = 0; x < 1024; x++)
+           {
+               ICache[x].TV = 0x2;
+           }
+       }
    }
 
    return(ret);
@@ -386,19 +397,21 @@ INLINE void PS_CPU::WriteMemory(int32_t &timestamp, uint32_t address, uint32_t v
 
 INLINE uint32 PS_CPU::ReadInstruction(pscpu_timestamp_t &timestamp, uint32 address)
 {
-	uint32 instr = ICache[(address & 0xFFC) >> 2].Data;
+	uint32 instr;
 
-	if(ICache[(address & 0xFFC) >> 2].TV != address)
+	if(CacheForceDisabled || ICache[(address & 0xFFC) >> 2].TV != address)
 	{
 		ReadAbsorb[ReadAbsorbWhich] = 0;
 		ReadAbsorbWhich = 0;
 
+		bool cachelessMemory = address >= 0xA0000000 || !(BIU & 0x800);
+
 		// FIXME: Handle executing out of scratchpad.
-		if(address >= 0xA0000000 || !(BIU & 0x800))
+		if(cachelessMemory || CacheForceDisabled)
 		{
 			instr = LoadU32_LE((uint32_t *)&FastMap[address >> FAST_MAP_SHIFT][address]);
 
-			if (!psx_cpu_overclock)
+			if (!psx_cpu_overclock && cachelessMemory)
 			{
 				// Approximate best-case cache-disabled time, per PS1 tests
 				// (executing out of 0xA0000000+); it can be 5 in 
@@ -448,6 +461,9 @@ INLINE uint32 PS_CPU::ReadInstruction(pscpu_timestamp_t &timestamp, uint32 addre
 			}
 			instr = ICache[(address & 0xFFC) >> 2].Data;
 		}
+	} else
+	{
+	    instr = ICache[(address & 0xFFC) >> 2].Data;
 	}
 
 	return instr;

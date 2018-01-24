@@ -80,6 +80,7 @@
 #define option_mouse_sensitivity     "beetle_psx_mouse_sensitivity"
 #define option_gun_cursor            "beetle_psx_gun_cursor"
 #define option_cpu_overclock         "beetle_psx_cpu_overclock"
+#define option_cpu_disable_cache     "beetle_psx_cpu_disable_cache"
 #define option_cd_access_method      "beetle_psx_cd_access_method"
 #define option_skip_bios             "beetle_psx_skipbios"
 #define option_memcard0_method       "beetle_psx_use_mednafen_memcard0_method"
