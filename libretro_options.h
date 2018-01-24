@@ -44,6 +44,7 @@
 #define option_gun_cursor            "beetle_psx_hw_gun_cursor"
 #define option_cpu_overclock         "beetle_psx_hw_cpu_overclock"
 #define option_cd_access_method      "beetle_psx_hw_cd_access_method"
+#define option_cpu_disable_cache     "beetle_psx_hw_cpu_disable_cache"
 #define option_skip_bios             "beetle_psx_hw_skipbios"
 #define option_memcard0_method       "beetle_psx_hw_use_mednafen_memcard0_method"
 #define option_memcard1_enable       "beetle_psx_hw_enable_memcard1"
